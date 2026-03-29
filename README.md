@@ -12,7 +12,7 @@ El corazón del proyecto es una base de datos relacional diseñada para garantiz
 
 Se implementaron restricciones de unicidad (`CONSTRAINT UQ_Producto_Almacen`) para asegurar que cada producto tenga un único registro de existencia por almacén, evitando duplicidad de datos críticos.
 
-
+![Diagrama Entidad Relación](img/DER-Bodeguita.png)
 
 ## 📊 Solución de Visualización (Power BI Dashboard)
 El tablero interactivo resuelve tres preguntas críticas para la operación diaria:
@@ -20,7 +20,7 @@ El tablero interactivo resuelve tres preguntas críticas para la operación diar
 2.  **Stock Crítico:** ¿Qué productos están por debajo del nivel de seguridad (menor o igual a 6 piezas)? (Gráfico de barras con formato condicional tipo semáforo).
 3.  **Visibilidad por Ubicación:** ¿Dónde está la mercancía? (Segmentador por Almacén/Piso de Venta).
 
-
+![Dashboard Final](img/Stock_Critico-Bodeguita.png)
 
 ## 💡 Próximos Pasos (Validación de Pedidos)
 Para el futuro, se planea implementar una lógica de base de datos que cruce las diferentes fuentes de pedidos (Listas Cero, Manuales, Automáticos) para detectar y bloquear surtidos duplicados, resolviendo un cuello de botella operativo actual.
