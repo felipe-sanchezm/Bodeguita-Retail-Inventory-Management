@@ -32,7 +32,7 @@ CREATE TABLE Estatus_Empleado (
 CREATE TABLE Puesto_Empleado (
     ID_Puesto_Empleado INT PRIMARY KEY IDENTITY(1,1),
     Nombre_Puesto_Empleado VARCHAR(100) NOT NULL,
-    Salario_Base_Puesto_Empleado DECIMAL,
+    Salario_Base_Puesto_Empleado DECIMAL(10,2),
     Estatus_Puesto_Empleado Bit DEFAULT 1
 );
 
@@ -78,6 +78,11 @@ CREATE TABLE Marca_Producto (
     Estatus_Marca_Producto Bit DEFAULT 1
 );
 
+CREATE TABLE Estatus_Transito (
+	ID_Estatus_Transito INT PRIMARY KEY IDENTITY(1,1),
+	Descripcion_Estatus_Transito VARCHAR(20) NOT NULL
+);
+
 --=====================================
 --TABLAS CON RELACIONES A OTRAS TABLAS
 --=====================================
@@ -111,6 +116,7 @@ CREATE TABLE Productos (
     SKU_Producto VARCHAR(20) NOT NULL,
     Material_Producto INT,
     Descripcion_Producto VARCHAR(MAX) NOT NULL,
+    Costo_Unitario DECIMAL (18,2) NOT NULL DEFAULT 0,
     ID_Marca INT,
     ID_Proveedor INT,
     ID_Departamento INT
@@ -127,6 +133,37 @@ CREATE TABLE Existencias (
     -- Esta regla evita que tengas dos renglones del mismo producto en el mismo almacén
     CONSTRAINT UQ_Producto_Almacen UNIQUE (ID_Producto, ID_Almacen)
 );
+
+/*
+CREATE TABLE Transito_Mercancia (
+	ID_Transito INT PRIMARY KEY IDENTITY(1,1),
+	ID_Producto INT, -- Apunta al catalogo de Productos
+	Cantidad_Transferida INT NOT NULL, CHECK(Cantidad_Transferida > 0),
+	ID_Almacen_Origen INT NOT NULL,
+	ID_Almacen_Destino INT NOT NULL,
+	Fecha_Transferencia DATETIME DEFAULT GETDATE(),
+	ID_Estatus INT NOT NULL DEFAULT 1, --Por defecto 'Pendiente Validar'
+);
+*/
+
+CREATE TABLE Transferencias (
+	ID_Transferencia INT PRIMARY KEY IDENTITY(1,1),
+	ID_Almacen_Origen INT NOT NULL,
+	ID_Almacen_Destino INT NOT NULL,
+	ID_Estatus INT NOT NULL,
+	FUM DATETIME DEFAULT GETDATE()
+);
+
+CREATE TABLE Transferencias_Detalle (
+	ID_Transferencias_Detalle INT PRIMARY KEY IDENTITY(1,1),
+	ID_Transferencia INT NOT NULL,
+	ID_Producto INT NOT NULL,
+	Cantidad INT NOT NULL,
+	Costo_Unitario_Historico DECIMAL(18,2) NOT NULL,
+	FUM DATETIME DEFAULT GETDATE(),
+	Subtotal AS (Cantidad * Costo_Unitario_Historico)
+);
+
 
 --================
 --LLAVES FORANEAS
@@ -209,3 +246,65 @@ FOREIGN KEY (ID_Producto) REFERENCES Productos(ID_Producto);
 ALTER TABLE Existencias
 ADD CONSTRAINT FK_Existencias_Almacen 
 FOREIGN KEY (ID_Almacen) REFERENCES Almacenes(ID_Almacen);
+
+--Relaciones de la tabla Transito Mercancia
+
+--Relacion con Productos
+ALTER TABLE Transito_Mercancia
+ADD CONSTRAINT FK_Transito_Producto
+FOREIGN KEY (ID_Producto) REFERENCES Productos(ID_Producto);
+
+--Relacion con Almacenes (Origen)
+ALTER TABLE Transito_Mercancia
+ADD CONSTRAINT FK_Transito_Origen
+FOREIGN KEY (ID_Almacen_Origen) REFERENCES Almacenes(ID_Almacen);
+
+--Relacion con Almacenes (Destino)
+ALTER TABLE Transito_Mercancia
+ADD CONSTRAINT FK_Transito_Destino
+FOREIGN KEY (ID_Almacen_Destino) REFERENCES Almacenes(ID_Almacen);
+
+/*
+--Relacion con Estatus_Transito
+ALTER TABLE Transito_Mercancia
+ADD CONSTRAINT FK_Transito_Estatus
+FOREIGN KEY (ID_Estatus) REFERENCES Estatus_Transito(ID_Estatus_Transito);
+*/
+
+--Relacion entre Transferencias y Almacenes para el Origen
+ALTER TABLE Transferencias
+ADD CONSTRAINT FK_Transferencias_AlmacenOrigen
+FOREIGN KEY (ID_Almacen_Origen) REFERENCES Almacenes (ID_Almacen);
+
+--Relacion entre Transferencias y Almacenes para el Destino
+ALTER TABLE Transferencias
+ADD CONSTRAINT FK_Transferencias_AlmacenDestino
+FOREIGN KEY (ID_Almacen_Destino) REFERENCES Almacenes (ID_ALmacen);
+
+--Relacion entre Transferencias y Estatus_Transito
+ALTER TABLE Transferencias
+ADD CONSTRAINT FK_Transferencias_EstatusTransito
+FOREIGN KEY (ID_Estatus) REFERENCES Estatus_Transito (ID_Estatus_Transito);
+
+--Relacion entre Transferencias_Detalle y Transferencias
+ALTER TABLE Transferencias_Detalle
+ADD CONSTRAINT FK_TransferenciasDetalle_Transferencia
+FOREIGN KEY (ID_Transferencia) REFERENCES Transferencias (ID_Transferencia);
+
+--Relacion entre Transferencias_Detalle y Productos
+ALTER TABLE Transferencias_Detalle
+ADD CONSTRAINT FK_TransferenciasDetalle_Productos
+FOREIGN KEY (ID_Producto) REFERENCES Productos (ID_Producto);
+
+--==================
+--REGLAS ESPECIALES
+--==================
+
+--Restrición para que no se envíen a si mismos
+/*
+ALTER TABLE Transito_Mercancia
+ADD CONSTRAINT CK_Origen_Destino_Diferente CHECK (ID_Almacen_Origen <> ID_Almacen_Destino);
+*/
+
+ALTER TABLE Transferencias
+ADD CONSTRAINT CK_Origen_Destino_Diferente CHECK (ID_Almacen_Origen <> ID_Almacen_Destino);
