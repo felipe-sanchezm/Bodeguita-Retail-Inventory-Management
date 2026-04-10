@@ -19,7 +19,7 @@ El corazón del proyecto es una base de datos relacional diseñada para garantiz
 
 Se implementaron restricciones de unicidad (`CONSTRAINT UQ_Producto_Almacen`) para asegurar que cada producto tenga un único registro de existencia por almacén, evitando duplicidad de datos críticos.
 
-![Diagrama Entidad Relación](img/DER-Bodeguita.png)
+![Diagrama Entidad Relación](img/DER-Bodeguita-09.04.2026.png)
 
 ## 📊 Solución de Visualización (Power BI Dashboard)
 El tablero interactivo resuelve tres preguntas críticas para la operación diaria:
