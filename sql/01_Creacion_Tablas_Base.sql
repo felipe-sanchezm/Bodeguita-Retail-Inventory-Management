@@ -162,7 +162,7 @@ CREATE TABLE Transferencias_Detalle (
 	ID_Transferencia INT NOT NULL,
 	ID_Producto INT NOT NULL,
 	Cantidad INT NOT NULL,
-	Costo_Unitario_Historico DECIMAL(18,2) NOT NULL CHECK (Costo_Unitario_Historico >= 0),
+	Costo_Unitario_Historico DECIMAL(18,2) NULL CHECK (Costo_Unitario_Historico >= 0),
 	FUM DATETIME DEFAULT GETDATE(),
 	Subtotal AS (Cantidad * Costo_Unitario_Historico)
 );
