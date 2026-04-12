@@ -98,7 +98,7 @@ CREATE TABLE Contacto_Proveedor (
     Estatus_Contacto_Proveedor Bit DEFAULT 1
 );
 
-CREATE TABLE Movimientos (
+/*CREATE TABLE Movimientos (
     ID_Movimiento INT PRIMARY KEY IDENTITY(1,1),
     ID_Producto INT,
     Cantidad INT NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE Movimientos (
     FUM DATE DEFAULT GETDATE(),
     ID_Tipo_Movimiento INT NOT NULL,
     Comentario VARCHAR (MAX) DEFAULT NULL
-);
+);*/
 
 CREATE TABLE Productos (
     ID_Producto INT PRIMARY KEY IDENTITY(1,1),
@@ -151,6 +151,9 @@ CREATE TABLE Transferencias (
 	ID_Almacen_Origen INT NOT NULL,
 	ID_Almacen_Destino INT NOT NULL,
 	ID_Estatus INT NOT NULL,
+    ID_Usuario INT NOT NULL,
+    ID_Empleado INT NOT NULL,
+    ID_Tipo_Movimiento INT NOT NULL,
 	FUM DATETIME DEFAULT GETDATE()
 );
 
@@ -159,7 +162,7 @@ CREATE TABLE Transferencias_Detalle (
 	ID_Transferencia INT NOT NULL,
 	ID_Producto INT NOT NULL,
 	Cantidad INT NOT NULL,
-	Costo_Unitario_Historico DECIMAL(18,2) NOT NULL,
+	Costo_Unitario_Historico DECIMAL(18,2) NOT NULL CHECK (Costo_Unitario_Historico >= 0),
 	FUM DATETIME DEFAULT GETDATE(),
 	Subtotal AS (Cantidad * Costo_Unitario_Historico)
 );
@@ -168,6 +171,11 @@ CREATE TABLE Transferencias_Detalle (
 --================
 --LLAVES FORANEAS
 --================
+/*
+    *******************
+    UBICACIONES_DEPTO
+    *******************
+*/
 --Relaciones de la tabla Ubicaciones_Depto
 ALTER TABLE Ubicaciones_Depto
 ADD CONSTRAINT FK_Ubicaciones_Departamento
@@ -177,6 +185,11 @@ ALTER TABLE Ubicaciones_Depto
 ADD CONSTRAINT FK_Ubicaciones_Almacen
 FOREIGN KEY (ID_Almacen) REFERENCES Almacenes(ID_Almacen);
 
+/*
+    *******************
+    CONTACTO_PROVEEDOR
+    *******************
+*/
 --Relaciones de la tabla Contacto_Proveedor
 ALTER TABLE Contacto_Proveedor
 ADD CONSTRAINT FK_ContactoProveedor_Proveedor
@@ -186,6 +199,7 @@ ALTER TABLE Contacto_Proveedor
 ADD CONSTRAINT FK_ContactoProveedor_Contacto
 FOREIGN KEY(ID_Contacto) REFERENCES Contacto(ID_Contacto);
 
+/*
 --Relaciones de la tabla Movimientos
 ALTER TABLE Movimientos
 ADD CONSTRAINT FK_Movimientos_Producto
@@ -210,7 +224,13 @@ FOREIGN KEY(ID_Empleado) REFERENCES EMpleado(ID_Empleado);
 ALTER TABLE Movimientos
 ADD CONSTRAINT FK_Movimientos_TipoMovimiento
 FOREIGN KEY(ID_Tipo_Movimiento) REFERENCES Tipo_Movimiento(ID_Tipo_Movimiento);
+*/
 
+/*
+    *******************
+        PRODUCTOS
+    *******************
+*/
 --Relaciones de la tabla Productos
 ALTER TABLE Productos
 ADD CONSTRAINT FK_Productos_MarcaProducto
@@ -224,6 +244,11 @@ ALTER TABLE Productos
 ADD CONSTRAINT FK_Productos_Departamento
 FOREIGN KEY(ID_Departamento) REFERENCES Departamento(ID_Departamento)
 
+/*
+    *******************
+        EMPLEADO
+    *******************
+*/
 -- Relaciones de la tabla Empleado
 ALTER TABLE Empleado
 ADD CONSTRAINT FK_Empleado_Puesto FOREIGN KEY (ID_Puesto) 
@@ -233,11 +258,21 @@ ALTER TABLE Empleado
 ADD CONSTRAINT FK_Empleado_Estatus FOREIGN KEY (ID_Estatus) 
 REFERENCES Estatus_Empleado(ID_Estatus_Empleado);
 
+/*
+    *****************
+        USUARIO
+    *****************
+*/
 -- Relación de la tabla Usuario
 ALTER TABLE Usuario
 ADD CONSTRAINT FK_Usuario_Rol FOREIGN KEY (ID_Rol) 
 REFERENCES Rol_Usuario(ID_Rol_Usuario);
 
+/*
+    *******************
+        EXISTENCIAS
+    *******************
+*/
 -- Relaciones de la tabla Existencias
 ALTER TABLE Existencias
 ADD CONSTRAINT FK_Existencias_Producto 
@@ -247,8 +282,7 @@ ALTER TABLE Existencias
 ADD CONSTRAINT FK_Existencias_Almacen 
 FOREIGN KEY (ID_Almacen) REFERENCES Almacenes(ID_Almacen);
 
---Relaciones de la tabla Transito Mercancia
-
+/*
 --Relacion con Productos
 ALTER TABLE Transito_Mercancia
 ADD CONSTRAINT FK_Transito_Producto
@@ -264,13 +298,17 @@ ALTER TABLE Transito_Mercancia
 ADD CONSTRAINT FK_Transito_Destino
 FOREIGN KEY (ID_Almacen_Destino) REFERENCES Almacenes(ID_Almacen);
 
-/*
 --Relacion con Estatus_Transito
 ALTER TABLE Transito_Mercancia
 ADD CONSTRAINT FK_Transito_Estatus
 FOREIGN KEY (ID_Estatus) REFERENCES Estatus_Transito(ID_Estatus_Transito);
 */
 
+/*
+    *********************
+        TRANSFERENCIAS
+    *********************
+*/
 --Relacion entre Transferencias y Almacenes para el Origen
 ALTER TABLE Transferencias
 ADD CONSTRAINT FK_Transferencias_AlmacenOrigen
@@ -286,6 +324,26 @@ ALTER TABLE Transferencias
 ADD CONSTRAINT FK_Transferencias_EstatusTransito
 FOREIGN KEY (ID_Estatus) REFERENCES Estatus_Transito (ID_Estatus_Transito);
 
+--Relacion entre Transferencias y Tipo_Movimiento
+ALTER TABLE Transferencias
+ADD CONSTRAINT FK_Transferencias_TipoMovimiento
+FOREIGN KEY (ID_Tipo_Movimiento) REFERENCES Tipo_Movimiento(ID_Tipo_Movimiento);
+
+--Relacion entre Transferencias y Usuario
+ALTER TABLE Transferencias
+ADD CONSTRAINT FK_Transferencias_Usuario
+FOREIGN KEY (ID_Usuario) REFERENCES Usuario (ID_Usuario);
+
+--Relacion entre Transferencias y Empleado
+ALTER TABLE Transferencias
+ADD CONSTRAINT FK_Transferencias_Empleado
+FOREIGN KEY (ID_Empleado) REFERENCES Empleado (ID_Empleado);
+
+/*
+    ***********************
+    TRANSFERENCIAS_DETALLE
+    ***********************
+*/
 --Relacion entre Transferencias_Detalle y Transferencias
 ALTER TABLE Transferencias_Detalle
 ADD CONSTRAINT FK_TransferenciasDetalle_Transferencia
@@ -296,11 +354,12 @@ ALTER TABLE Transferencias_Detalle
 ADD CONSTRAINT FK_TransferenciasDetalle_Productos
 FOREIGN KEY (ID_Producto) REFERENCES Productos (ID_Producto);
 
+
 --==================
 --REGLAS ESPECIALES
 --==================
 
---Restrición para que no se envíen a si mismos
+--Restricción para que no se envíen a si mismos
 /*
 ALTER TABLE Transito_Mercancia
 ADD CONSTRAINT CK_Origen_Destino_Diferente CHECK (ID_Almacen_Origen <> ID_Almacen_Destino);
@@ -308,3 +367,16 @@ ADD CONSTRAINT CK_Origen_Destino_Diferente CHECK (ID_Almacen_Origen <> ID_Almace
 
 ALTER TABLE Transferencias
 ADD CONSTRAINT CK_Origen_Destino_Diferente CHECK (ID_Almacen_Origen <> ID_Almacen_Destino);
+
+--Restricción que impide que se registren valores negativos en el costo_unitario_historico
+ALTER TABLE Transferencias_Detalle
+ADD CONSTRAINT CK_Costo_Unitario_Historico_Positivo 
+CHECK (Costo_Unitario_Historico >= 0);
+
+--Candado para evitar que un mismo producto exista en diferentes almacenes
+ALTER TABLE Existencias
+ADD CONSTRAINT UQ_Existencias_Producto_Almacen 
+UNIQUE (ID_Producto, ID_Almacen);
+
+--Restriccion que asegura que no se repita el SKU de un producto en otros
+ALTER TABLE Productos ADD CONSTRAINT UQ_Productos_SKU UNIQUE (SKU_Producto);
