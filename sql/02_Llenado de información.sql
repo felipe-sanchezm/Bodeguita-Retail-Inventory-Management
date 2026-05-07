@@ -217,44 +217,4 @@ VALUES
 ('7542000000000008', 42000008, 'Dulce Tamarindo Picante 1kg', 320.00, 10, 4, 42),
 ('7542000000000009', 42000009, 'Set Regalo Chocolates Finos', 1100.00, 10, 4, 42),
 ('7542000000000010', 42000010, 'Bolsa Dulce Checkout Mix', 55.00, 10, 4, 42);
-
--- 1. ENTRADA MASIVA INICIAL (Carga de Proveedor a Bodega)
-INSERT INTO Movimientos (ID_Producto, Cantidad, ID_Almacen_Origen, ID_Almacen_Destino, ID_Usuario, ID_Empleado, FUM, ID_Tipo_Movimiento)
-SELECT 
-    p.ID_Producto, 
-    500, 
-    (SELECT ID_Almacen FROM Almacenes WHERE Codigo_Almacen = 'PROV'), -- ORIGEN: Proveedor (Ya no es NULL)
-    CASE 
-        WHEN d.Nombre_Departamento IN ('Juguetería Niños', 'Juguetería Niñas', 'Juguetería Bebés', 'Papelería', 'Playa', 'Navideño') 
-        THEN (SELECT ID_Almacen FROM Almacenes WHERE Codigo_Almacen = 'A004')
-        ELSE (SELECT ID_Almacen FROM Almacenes WHERE Codigo_Almacen = 'A003')
-    END, 
-    7, 5, '2025-03-21 08:00:00', 1
-FROM Productos p
-JOIN Departamento d ON p.ID_Departamento = d.ID_Departamento;
-
--- 2. BUCLE DE TRASPASOS (Surtido diario durante 1 año)
--- Este se mantiene igual porque el origen ya era una bodega real.
-DECLARE @Contador INT = 0;
-WHILE @Contador < 300 
-BEGIN
-    INSERT INTO Movimientos (ID_Producto, Cantidad, ID_Almacen_Origen, ID_Almacen_Destino, ID_Usuario, ID_Empleado, FUM, ID_Tipo_Movimiento)
-    SELECT TOP 1
-        p.ID_Producto,
-        FLOOR(RAND()*(30-5+1))+5, 
-        CASE 
-            WHEN d.Nombre_Departamento IN ('Juguetería Niños', 'Juguetería Niñas', 'Juguetería Bebés', 'Papelería', 'Playa', 'Navideño') 
-            THEN (SELECT ID_Almacen FROM Almacenes WHERE Codigo_Almacen = 'A004')
-            ELSE (SELECT ID_Almacen FROM Almacenes WHERE Codigo_Almacen = 'A003')
-        END, 
-        (SELECT ID_Almacen FROM Almacenes WHERE Codigo_Almacen = 'A001'), 
-        CASE WHEN d.Nombre_Departamento LIKE '%Ropa%' THEN 4 WHEN d.Nombre_Departamento LIKE '%Perfumería%' THEN 6 ELSE 5 END, 
-        CASE WHEN d.Nombre_Departamento LIKE '%Ropa%' THEN 4 WHEN d.Nombre_Departamento LIKE '%Perfumería%' THEN 7 ELSE 6 END, 
-        DATEADD(SECOND, FLOOR(RAND()*31536000), '2025-03-22'), 
-        3 
-    FROM Productos p
-    JOIN Departamento d ON p.ID_Departamento = d.ID_Departamento
-    ORDER BY NEWID();
-
-    SET @Contador = @Contador + 1;
-END;
+*/
